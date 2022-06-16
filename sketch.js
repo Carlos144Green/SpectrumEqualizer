@@ -5,19 +5,17 @@ var description = 'loading';
 var p;
 var bars = 16;
 var hats = new Array(bars)
+hats.wait = new Array(bars)
 var puckSize = 15
 var horSpace = 25
 var verSpace = 10
-
+const binRanges = [];
 function preload() {
-  // soundFile = loadSound('sin40.wav');
-  // soundFile = loadSound('sin45.wav');
-  // soundFile = loadSound('sweep.wav');
-  // soundFile = loadSound('sweep1.wav');
-  // soundFile = loadSound('chicken.mp3');
-  // soundFile = loadSound('dub.mp3');
-  soundFile = loadSound('14 band.mp3');
-  soundFile.amp(.5);
+  // soundFile = loadSound('sound2.mp3'); // was ight
+  soundFile = loadSound('sound3.mp3');
+  // soundFile = loadSound('sound4.mp3'); 
+
+  soundFile.amp(.3);
 }
 
 function setup() {
@@ -25,12 +23,19 @@ function setup() {
   fill(255, 255, 255);
   noStroke();
   textAlign(CENTER);
-  fft = new p5.FFT(0.8);
+  fft = new p5.FFT(0.9);
 
   p = createP(description);
   var p2 = createP(
     'Description: Using getEnergy(low, high) to measure amplitude within a range of frequencies.'
   );
+
+  for (var b=0; b<bars; b++){
+    var loFreq = pow(1.3, b) * 30;
+    var hiFreq = pow(1.3, b+1) * 30;
+    binRanges.push({x: Math.round(loFreq), y: Math.round(hiFreq)})
+  }
+  console.log("the bin ranges are: ", binRanges)
 }
 
 function draw() {
@@ -38,33 +43,37 @@ function draw() {
   updateDescription();
   fft.analyze(); // analyze before calling fft.getEnergy()
 
+  var binResults = []
 
-  for (var i = 0; i < bars; i++) {
-    noStroke();
-    // Each bar has a unique frequency range
-    var loFreq = pow(1.5, i) * 30;
-    var hiFreq = pow(1.5, i+1) * 30;
-    var freqValue = fft.getEnergy(loFreq, hiFreq); //TO DO
-
-
-    var puckHigh = drawBar(bars,i,freqValue)
-    hats[i] = hatCalcs(puckHigh, hats[i])
-    var x1 = (i + 1) * (width-horSpace) / bars - (width-horSpace) / bars +horSpace
-    var y1 = height-(int(hats[i])+1)*(puckSize+verSpace)
-    var x2 = (width-horSpace) / bars-horSpace
-    var y2 = puckSize
-    fill(255);
-    rect(x1,y1,x2,y2);
-
-
-
-    fill(255);
-    text(
-      loFreq.toFixed(0) + ' Hz - ' + hiFreq.toFixed(0) + ' Hz',
-      (i + 1) * width / bars - width / bars / 2,
-      30
-    )
+  for (var i = 0; i<bars; i++){
+    binResults.push(Math.round(fft.getEnergy(binRanges[i].x, binRanges[i].y)));
   }
+  binResults = sortWithIndeces(binResults)
+
+  for (var i = 0; i<bars; i++) {
+    var ii = binResults.sortIndices[i]
+    drawBar(bars,ii,binResults[i])
+    
+
+  }
+}
+
+function sortWithIndeces(toSort) {
+  for (var i = 0; i < toSort.length; i++) {
+    toSort[i] = [toSort[i], i];
+  }
+  toSort.sort(function(left, right) {
+    return left[0] > right[0] ? -1 : 1;
+  });
+  toSort.sortIndices = [];
+  for (var j = 0; j < toSort.length; j++) {
+    var dec = 1
+    dec = 1-j/bars 
+
+    toSort.sortIndices.push(toSort[j][1]);
+    toSort[j] = toSort[j][0]*dec;
+  }
+  return toSort;
 }
 
 function drawBar(bars,i,freqValue){
@@ -77,31 +86,60 @@ function drawBar(bars,i,freqValue){
     var y1 = height-(j+1)*(puckSize+verSpace)
     var x2 = (width-horSpace) / bars-horSpace
     var y2 = puckSize
-    if (j>maxPucks*.92){
+    if (j>maxPucks*.85){
       fill(255,0,0);
+      drawingContext.shadowBlur = 32
+      drawingContext.shadowColor = color(255,0,0)
     }
     else{
       fill((i * 30) % 100 + 50, 195, (i * 25 + 50) % 255);
+      drawingContext.shadowBlur = 16
+      drawingContext.shadowColor = color((i * 30) % 100 + 50, 195, (i * 25 + 50) % 255)
     }
-
+    
+    
     rect(x1,y1,x2,y2);
   }
-  return puckNum
+  
+  
+  hats = hatCalcs(puckNum, hats, i)
+  console.log(hats)
+  var x1 = (i + 1) * (width-horSpace) / bars - (width-horSpace) / bars +horSpace
+  var y1 = height-(int(hats[i])+1)*(puckSize+verSpace)
+  var x2 = (width-horSpace) / bars-horSpace
+  var y2 = puckSize
+  fill(255);
+
+  drawingContext.shadowBlur = 32;
+  drawingContext.shadowColor = color(255);
+  rect(x1,y1,x2,y2);
+  rect(x1,y1,x2,y2);
+  rect(x1,y1,x2,y2);
+
 }
 
-function hatCalcs(puckNum, oldHat){
-  if (oldHat > puckNum){
-    return oldHat-.2
+function hatCalcs(puckNum, oldHat, i){
+  if (oldHat[i] > puckNum){
+    if (oldHat.wait[i] == 0){
+      oldHat[i] = oldHat[i]-.2
+      return oldHat
+    }
+    else{
+      oldHat.wait[i] -= 1
+      return oldHat
+    }
   }
-  return puckNum
-
+  oldHat.wait[i] = 12
+  oldHat[i] = puckNum
+  return oldHat
 }
 
-function keyPressed() {
-  if (soundFile.isPlaying()) {
-    soundFile.pause();
+function mouseClicked(){
+  if (soundFile.isPlaying()){
+    soundFile.pause()
+  
   } else {
-    soundFile.loop();
+    soundFile.loop()
   }
 }
 
