@@ -11,19 +11,19 @@ var horSpace = 25
 var verSpace = 10
 const binRanges = [];
 function preload() {
-  // soundFile = loadSound('sound2.mp3'); // was ight
-  soundFile = loadSound('sound3.mp3');
-  // soundFile = loadSound('sound4.mp3'); 
+  // soundFile = loadSound('sound2.mp3');   // was ight
+//   soundFile = loadSound('sound3.mp3');   // undertail vibes
+  soundFile = loadSound('sound4.mp3');      //mario vibes
 
   soundFile.amp(.3);
 }
 
 function setup() {
-  createCanvas(2400, 1100);
+  createCanvas(2400, 600);
   fill(255, 255, 255);
   noStroke();
   textAlign(CENTER);
-  fft = new p5.FFT(0.9);
+  fft = new p5.FFT(0.4);
 
   p = createP(description);
   var p2 = createP(
@@ -39,11 +39,13 @@ function setup() {
 }
 
 function draw() {
+  var binResults = []
+  
   background(0);
   updateDescription();
   fft.analyze(); // analyze before calling fft.getEnergy()
 
-  var binResults = []
+  
 
   for (var i = 0; i<bars; i++){
     binResults.push(Math.round(fft.getEnergy(binRanges[i].x, binRanges[i].y)));
@@ -53,9 +55,9 @@ function draw() {
   for (var i = 0; i<bars; i++) {
     var ii = binResults.sortIndices[i]
     drawBar(bars,ii,binResults[i])
-    
-
   }
+
+  // var backgroundBeat = fft
 }
 
 function sortWithIndeces(toSort) {
@@ -68,7 +70,7 @@ function sortWithIndeces(toSort) {
   toSort.sortIndices = [];
   for (var j = 0; j < toSort.length; j++) {
     var dec = 1
-    dec = 1-j/bars 
+    dec = 1-j/(bars+2) 
 
     toSort.sortIndices.push(toSort[j][1]);
     toSort[j] = toSort[j][0]*dec;
@@ -86,24 +88,30 @@ function drawBar(bars,i,freqValue){
     var y1 = height-(j+1)*(puckSize+verSpace)
     var x2 = (width-horSpace) / bars-horSpace
     var y2 = puckSize
-    if (j>maxPucks*.85){
-      fill(255,0,0);
-      drawingContext.shadowBlur = 32
-      drawingContext.shadowColor = color(255,0,0)
-    }
-    else{
-      fill((i * 30) % 100 + 50, 195, (i * 25 + 50) % 255);
-      drawingContext.shadowBlur = 16
-      drawingContext.shadowColor = color((i * 30) % 100 + 50, 195, (i * 25 + 50) % 255)
-    }
-    
+    // if (j>maxPucks*.84){
+    //   fill(255,0,0);
+    //   drawingContext.shadowBlur = 32
+    //   drawingContext.shadowColor = color(255,0,0)
+    // }else if (j>maxPucks*.75){
+    //     fill(255,255,0);
+    //     drawingContext.shadowBlur = 32
+    //     drawingContext.shadowColor = color(255,0,0)
+    //   }
+    // else{
+    //   fill(j*255/maxPucks,255-j*255/maxPucks,0);
+    //   drawingContext.shadowBlur = 16
+    //   drawingContext.shadowColor = color(0)
+    // }
+    fill(j*255/maxPucks,255-j*255/maxPucks,i*40,175);
+    drawingContext.shadowBlur = 30
+    drawingContext.shadowColor = color(j*255/maxPucks,255-j*255/maxPucks,i*40)
     
     rect(x1,y1,x2,y2);
   }
   
   
   hats = hatCalcs(puckNum, hats, i)
-  console.log(hats)
+  // console.log(hats)
   var x1 = (i + 1) * (width-horSpace) / bars - (width-horSpace) / bars +horSpace
   var y1 = height-(int(hats[i])+1)*(puckSize+verSpace)
   var x2 = (width-horSpace) / bars-horSpace
