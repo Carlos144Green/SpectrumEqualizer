@@ -9,11 +9,13 @@ hats.wait = new Array(bars)
 var puckSize = 15
 var horSpace = 25
 var verSpace = 10
+var particles = []
+
 const binRanges = [];
 function preload() {
   // soundFile = loadSound('sound2.mp3');   // was ight
 //   soundFile = loadSound('sound3.mp3');   // undertail vibes
-  soundFile = loadSound('sound4.mp3');      //mario vibes
+  soundFile = loadSound('14 band.mp3');      //mario vibes
 
   soundFile.amp(.3);
 }
@@ -24,6 +26,7 @@ function setup() {
   noStroke();
   textAlign(CENTER);
   fft = new p5.FFT(0.4);
+  amp = new p5.Amplitude();
 
   p = createP(description);
   var p2 = createP(
@@ -36,21 +39,79 @@ function setup() {
     binRanges.push({x: Math.round(loFreq), y: Math.round(hiFreq)})
   }
   console.log("the bin ranges are: ", binRanges)
+  soundFile.pause()
+  noLoop()
 }
+
+class Particle{
+  constructor(){
+    this.pos =  [random(width),height-verSpace-1]
+    // this.pos = p5.Vector.random2D().mult(250)
+    this.vel = 0
+    this.acc = random(0.001,.005)
+
+    this.w = random(3,6)
+    }
+  update(val){
+
+
+    this.vel += this.acc
+    this.pos[1] -= this.vel
+
+    if (val>.15){
+      this.vel += this.vel
+
+    }
+
+  }
+  show() {
+    noStroke()
+    fill(255)
+    drawingContext.shadowBlur = 0
+
+    ellipse(this.pos[0], this.pos[1], this.w)
+  }
+  remove(){
+    if (this.posx<-width/2|| this.pos.x>width/2||this.pos.y<-height||this.pos.y>height/2){
+      return true
+    }
+    return false
+  }
+}
+
 
 function draw() {
   var binResults = []
-  
+
   background(0);
   updateDescription();
   fft.analyze(); // analyze before calling fft.getEnergy()
-
-  
 
   for (var i = 0; i<bars; i++){
     binResults.push(Math.round(fft.getEnergy(binRanges[i].x, binRanges[i].y)));
   }
   binResults = sortWithIndeces(binResults)
+
+
+  var p = new Particle()
+  particles.push(p)
+
+  for(var pNum=  particles.length -1; pNum>=0; pNum--){
+    if (particles[pNum].remove() == true){
+      particles.splice(pNum, 1)
+    }
+    else{
+      particles[pNum].update(amp.getLevel())
+      particles[pNum].show()
+    }
+
+    // if (amp.getLevel()>.12){
+    //   particles[pNum].push()
+    //
+    // }
+  }
+
+
 
   for (var i = 0; i<bars; i++) {
     var ii = binResults.sortIndices[i]
@@ -70,7 +131,7 @@ function sortWithIndeces(toSort) {
   toSort.sortIndices = [];
   for (var j = 0; j < toSort.length; j++) {
     var dec = 1
-    dec = 1-j/(bars+2) 
+    dec = 1-j/(bars+2)
 
     toSort.sortIndices.push(toSort[j][1]);
     toSort[j] = toSort[j][0]*dec;
@@ -83,33 +144,23 @@ function drawBar(bars,i,freqValue){
   var pixleHeight = freqValue/255*(height-verSpace)
   var puckNum = Math.floor(pixleHeight/(puckSize+verSpace))
 
+
+
+
   for (var j=0; j<puckNum; j++){
     var x1 = (i + 1) * (width-horSpace) / bars - (width-horSpace) / bars +horSpace
     var y1 = height-(j+1)*(puckSize+verSpace)
     var x2 = (width-horSpace) / bars-horSpace
     var y2 = puckSize
-    // if (j>maxPucks*.84){
-    //   fill(255,0,0);
-    //   drawingContext.shadowBlur = 32
-    //   drawingContext.shadowColor = color(255,0,0)
-    // }else if (j>maxPucks*.75){
-    //     fill(255,255,0);
-    //     drawingContext.shadowBlur = 32
-    //     drawingContext.shadowColor = color(255,0,0)
-    //   }
-    // else{
-    //   fill(j*255/maxPucks,255-j*255/maxPucks,0);
-    //   drawingContext.shadowBlur = 16
-    //   drawingContext.shadowColor = color(0)
-    // }
-    fill(j*255/maxPucks,255-j*255/maxPucks,i*40,175);
-    drawingContext.shadowBlur = 30
+
+    fill(j*255/maxPucks,255-j*255/maxPucks,i*20,175);
+    drawingContext.shadowBlur = 10
     drawingContext.shadowColor = color(j*255/maxPucks,255-j*255/maxPucks,i*40)
-    
+
     rect(x1,y1,x2,y2);
   }
-  
-  
+
+
   hats = hatCalcs(puckNum, hats, i)
   // console.log(hats)
   var x1 = (i + 1) * (width-horSpace) / bars - (width-horSpace) / bars +horSpace
@@ -145,9 +196,11 @@ function hatCalcs(puckNum, oldHat, i){
 function mouseClicked(){
   if (soundFile.isPlaying()){
     soundFile.pause()
-  
+    noLoop()
   } else {
-    soundFile.loop()
+    soundFile.play()
+    loop()
+
   }
 }
 
