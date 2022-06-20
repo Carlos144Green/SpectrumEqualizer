@@ -14,8 +14,8 @@ var particles = []
 const binRanges = [];
 function preload() {
   // soundFile = loadSound('sound2.mp3');   // was ight
-//   soundFile = loadSound('sound3.mp3');   // undertail vibes
-  soundFile = loadSound('14 band.mp3');      //mario vibes
+  // soundFile = loadSound('sound3.mp3');   // undertail vibes
+  soundFile = loadSound('sound4.mp3');      //mario vibes
 
   soundFile.amp(.3);
 }
@@ -56,12 +56,12 @@ class Particle{
 
 
     this.vel += this.acc
-    this.pos[1] -= this.vel
+    this.pos[1] -= this.vel *100*val
+    console.log(val)
+    // if (val>.08){
+    //   this.vel += this.vel
 
-    if (val>.15){
-      this.vel += this.vel
-
-    }
+    // }
 
   }
   show() {
