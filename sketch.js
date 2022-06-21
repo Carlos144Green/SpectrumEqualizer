@@ -6,7 +6,7 @@ var p;
 var bars = 16;
 var hats = new Array(bars)
 hats.wait = new Array(bars)
-var puckSize = 15
+var puckSize = 20
 var horSpace = 25
 var verSpace = 10
 var particles = []
@@ -14,8 +14,8 @@ var particles = []
 const binRanges = [];
 function preload() {
   // soundFile = loadSound('sound2.mp3');   // was ight
-//   soundFile = loadSound('sound3.mp3');   // undertail vibes
-  soundFile = loadSound('14 band.mp3');      //mario vibes
+  // soundFile = loadSound('sound3.mp3');   // undertail vibes
+  soundFile = loadSound('sound4.mp3');      //mario vibes
 
   soundFile.amp(.3);
 }
@@ -43,41 +43,6 @@ function setup() {
   noLoop()
 }
 
-class Particle{
-  constructor(){
-    this.pos =  [random(width),height-verSpace-1]
-    // this.pos = p5.Vector.random2D().mult(250)
-    this.vel = 0
-    this.acc = random(0.001,.005)
-
-    this.w = random(3,6)
-    }
-  update(val){
-
-
-    this.vel += this.acc
-    this.pos[1] -= this.vel
-
-    if (val>.15){
-      this.vel += this.vel
-
-    }
-
-  }
-  show() {
-    noStroke()
-    fill(255)
-    drawingContext.shadowBlur = 0
-
-    ellipse(this.pos[0], this.pos[1], this.w)
-  }
-  remove(){
-    if (this.posx<-width/2|| this.pos.x>width/2||this.pos.y<-height||this.pos.y>height/2){
-      return true
-    }
-    return false
-  }
-}
 
 
 function draw() {
@@ -87,31 +52,13 @@ function draw() {
   updateDescription();
   fft.analyze(); // analyze before calling fft.getEnergy()
 
+
+
+
   for (var i = 0; i<bars; i++){
     binResults.push(Math.round(fft.getEnergy(binRanges[i].x, binRanges[i].y)));
   }
   binResults = sortWithIndeces(binResults)
-
-
-  var p = new Particle()
-  particles.push(p)
-
-  for(var pNum=  particles.length -1; pNum>=0; pNum--){
-    if (particles[pNum].remove() == true){
-      particles.splice(pNum, 1)
-    }
-    else{
-      particles[pNum].update(amp.getLevel())
-      particles[pNum].show()
-    }
-
-    // if (amp.getLevel()>.12){
-    //   particles[pNum].push()
-    //
-    // }
-  }
-
-
 
   for (var i = 0; i<bars; i++) {
     var ii = binResults.sortIndices[i]
@@ -120,6 +67,8 @@ function draw() {
 
   // var backgroundBeat = fft
 }
+
+
 
 function sortWithIndeces(toSort) {
   for (var i = 0; i < toSort.length; i++) {
@@ -143,9 +92,9 @@ function drawBar(bars,i,freqValue){
   var maxPucks = (height-verSpace)/(puckSize+verSpace)
   var pixleHeight = freqValue/255*(height-verSpace)
   var puckNum = Math.floor(pixleHeight/(puckSize+verSpace))
-
-
-
+  var r = 0
+  var g = 0
+  var b = 0 
 
   for (var j=0; j<puckNum; j++){
     var x1 = (i + 1) * (width-horSpace) / bars - (width-horSpace) / bars +horSpace
@@ -153,13 +102,46 @@ function drawBar(bars,i,freqValue){
     var x2 = (width-horSpace) / bars-horSpace
     var y2 = puckSize
 
-    fill(j*255/maxPucks,255-j*255/maxPucks,i*20,175);
-    drawingContext.shadowBlur = 10
-    drawingContext.shadowColor = color(j*255/maxPucks,255-j*255/maxPucks,i*40)
+    if (j<12){
+      r = 0
+      g = 255
+      b = 0
+    }
+    else if (j<16){
+      r = 255
+      g = 255
+      b = 0
+    }
+    else{
+      r = 255
+      g = 0
+      b = 0
+    }
 
+
+    fill(r,g,b,175);
+    drawingContext.shadowBlur = 15
+    drawingContext.shadowColor = color(r,g,b)
+
+
+    
+    rect(x1,y1,x2,y2);
+    rect(x1,y1,x2,y2);
     rect(x1,y1,x2,y2);
   }
 
+
+  for (var k=puckNum; k<maxPucks; k++){
+    var x1 = (i + 1) * (width-horSpace) / bars - (width-horSpace) / bars +horSpace
+    var y1 = height-(j=k+1)*(puckSize+verSpace)
+    var x2 = (width-horSpace) / bars-horSpace
+    var y2 = puckSize
+
+    fill(30);
+    drawingContext.shadowBlur = 0
+
+    rect(x1,y1,x2,y2);
+  }
 
   hats = hatCalcs(puckNum, hats, i)
   // console.log(hats)
@@ -170,7 +152,9 @@ function drawBar(bars,i,freqValue){
   fill(255);
 
   drawingContext.shadowBlur = 32;
+  // drawingContext.shadowColor = color(hats[i]*255/maxPucks,255-hats[i]*255/maxPucks,0,175);
   drawingContext.shadowColor = color(255);
+
   rect(x1,y1,x2,y2);
   rect(x1,y1,x2,y2);
   rect(x1,y1,x2,y2);
