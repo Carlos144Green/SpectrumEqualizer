@@ -1,37 +1,29 @@
 var soundFile;
 var fft;
 
-var description = 'loading';
-var p;
 var bars = 16;
 var hats = new Array(bars)
 hats.wait = new Array(bars)
 var puckSize = 20
 var horSpace = 25
 var verSpace = 10
-var particles = []
-
 const binRanges = [];
+
 function preload() {
   // soundFile = loadSound('sound2.mp3');   // was ight
   // soundFile = loadSound('sound3.mp3');   // undertail vibes
   soundFile = loadSound('sound4.mp3');      //mario vibes
 
-  soundFile.amp(.3);
 }
 
 function setup() {
   createCanvas(2400, 600);
-  fill(255, 255, 255);
   noStroke();
-  textAlign(CENTER);
+  
   fft = new p5.FFT(0.4);
   amp = new p5.Amplitude();
+  soundFile.amp(.3);
 
-  p = createP(description);
-  var p2 = createP(
-    'Description: Using getEnergy(low, high) to measure amplitude within a range of frequencies.'
-  );
 
   for (var b=0; b<bars; b++){
     var loFreq = pow(1.3, b) * 30;
@@ -49,11 +41,7 @@ function draw() {
   var binResults = []
 
   background(0);
-  updateDescription();
-  fft.analyze(); // analyze before calling fft.getEnergy()
-
-
-
+  fft.analyze(); 
 
   for (var i = 0; i<bars; i++){
     binResults.push(Math.round(fft.getEnergy(binRanges[i].x, binRanges[i].y)));
@@ -64,8 +52,6 @@ function draw() {
     var ii = binResults.sortIndices[i]
     drawBar(bars,ii,binResults[i])
   }
-
-  // var backgroundBeat = fft
 }
 
 
@@ -94,9 +80,10 @@ function drawBar(bars,i,freqValue){
   var puckNum = Math.floor(pixleHeight/(puckSize+verSpace))
   var r = 0
   var g = 0
-  var b = 0 
+  var b = 0
+  var on_off = 0 
 
-  for (var j=0; j<puckNum; j++){
+  for (var j=0; j<maxPucks; j++){
     var x1 = (i + 1) * (width-horSpace) / bars - (width-horSpace) / bars +horSpace
     var y1 = height-(j+1)*(puckSize+verSpace)
     var x2 = (width-horSpace) / bars-horSpace
@@ -105,43 +92,28 @@ function drawBar(bars,i,freqValue){
     if (j<12){
       r = 0
       g = 255
-      b = 0
     }
-    else if (j<16){
+    else if (j<15){
       r = 255
       g = 255
-      b = 0
     }
     else{
       r = 255
       g = 0
-      b = 0
     }
-
-
-    fill(r,g,b,175);
-    drawingContext.shadowBlur = 15
-    drawingContext.shadowColor = color(r,g,b)
-
-
-    
-    rect(x1,y1,x2,y2);
-    rect(x1,y1,x2,y2);
-    rect(x1,y1,x2,y2);
-  }
-
-
-  for (var k=puckNum; k<maxPucks; k++){
-    var x1 = (i + 1) * (width-horSpace) / bars - (width-horSpace) / bars +horSpace
-    var y1 = height-(j=k+1)*(puckSize+verSpace)
-    var x2 = (width-horSpace) / bars-horSpace
-    var y2 = puckSize
-
-    fill(30);
-    drawingContext.shadowBlur = 0
+    if (j<puckNum){
+      drawingContext.shadowBlur = 10
+      drawingContext.shadowColor = color(r,g,b) 
+      on_off = 255
+    }else{
+      drawingContext.shadowBlur = 0
+      on_off = 25
+    }
+    fill(r,g,b,on_off);
 
     rect(x1,y1,x2,y2);
   }
+
 
   hats = hatCalcs(puckNum, hats, i)
   // console.log(hats)
@@ -152,7 +124,6 @@ function drawBar(bars,i,freqValue){
   fill(255);
 
   drawingContext.shadowBlur = 32;
-  // drawingContext.shadowColor = color(hats[i]*255/maxPucks,255-hats[i]*255/maxPucks,0,175);
   drawingContext.shadowColor = color(255);
 
   rect(x1,y1,x2,y2);
@@ -185,27 +156,5 @@ function mouseClicked(){
     soundFile.play()
     loop()
 
-  }
-}
-
-// Change description text if the song is loading, playing or paused
-function updateDescription() {
-  if (!soundFile.isPlaying()) {
-    description = 'Paused...';
-    p.html(description);
-  } else if (soundFile.isPlaying()) {
-    description = 'Playing!';
-    p.html(description);
-  } else {
-    for (var i = 0; i < frameCount % 3; i++) {
-      // add periods to loading to create a fun loading bar effect
-      if (frameCount % 4 === 0) {
-        description += '.';
-      }
-      if (frameCount % 25 === 0) {
-        description = 'loading';
-      }
-    }
-    p.html(description);
   }
 }
