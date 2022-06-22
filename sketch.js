@@ -13,17 +13,17 @@ function preload() {
   // soundFile = loadSound('sound2.mp3');   // was ight
   // soundFile = loadSound('sound3.mp3');   // undertail vibes
   soundFile = loadSound('sound4.mp3');      //mario vibes
-
 }
 
 function setup() {
-  createCanvas(2400, 600);
+  var myCanvas = createCanvas(2400, 600);
+  myCanvas.parent('sketch-holder');
+
   noStroke();
   
   fft = new p5.FFT(0.4);
   amp = new p5.Amplitude();
   soundFile.amp(.3);
-
 
   for (var b=0; b<bars; b++){
     var loFreq = pow(1.3, b) * 30;
@@ -34,8 +34,6 @@ function setup() {
   soundFile.pause()
   noLoop()
 }
-
-
 
 function draw() {
   var binResults = []
@@ -53,8 +51,6 @@ function draw() {
     drawBar(bars,ii,binResults[i])
   }
 }
-
-
 
 function sortWithIndeces(toSort) {
   for (var i = 0; i < toSort.length; i++) {
@@ -114,22 +110,17 @@ function drawBar(bars,i,freqValue){
     rect(x1,y1,x2,y2);
   }
 
-
   hats = hatCalcs(puckNum, hats, i)
-  // console.log(hats)
   var x1 = (i + 1) * (width-horSpace) / bars - (width-horSpace) / bars +horSpace
   var y1 = height-(int(hats[i])+1)*(puckSize+verSpace)
   var x2 = (width-horSpace) / bars-horSpace
   var y2 = puckSize
-  fill(255);
-
   drawingContext.shadowBlur = 32;
   drawingContext.shadowColor = color(255);
+  fill(255);
 
   rect(x1,y1,x2,y2);
   rect(x1,y1,x2,y2);
-  rect(x1,y1,x2,y2);
-
 }
 
 function hatCalcs(puckNum, oldHat, i){
@@ -155,6 +146,5 @@ function mouseClicked(){
   } else {
     soundFile.play()
     loop()
-
   }
 }
