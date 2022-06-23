@@ -17,13 +17,15 @@ function preload() {
 
 function setup() {
   var myCanvas = createCanvas(2400, 600);
+  // myCanvas.parent('canvas1');
   myCanvas.parent('sketch-holder');
+
 
   noStroke();
   
   fft = new p5.FFT(0.4);
   amp = new p5.Amplitude();
-  soundFile.amp(.3);
+  soundFile.amp(.1);
 
   for (var b=0; b<bars; b++){
     var loFreq = pow(1.3, b) * 30;
